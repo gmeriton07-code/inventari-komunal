@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistemi i Regjistrimit të Aseteve dhe Inventarit Komunal</title>
+    <link rel="stylesheet" href="stili.css">
+    <!-- Biblioteka për krijimin e skedarëve profesionalë Excel (.xlsx) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <!-- MENYJA ANËSORE (SIDEBAR) -->
+        <aside class="sidebar">
+            <div class="logo">
+                <h2>Inventari Komunal</h2>
+            </div>
+            <div class="status-admin">
+                <span id="statusKyqje" class="badge badge-danger">Regjistrues në Terren</span>
+                <button class="btn btn-sm btn-outline" id="btnKyqjeAdmin" onclick="kerkoKyqje()">🔐 Kyçu si Admin</button>
+            </div>
+            <nav class="nav-menu">
+                <a href="#seksioniTerrenit" class="nav-link active">📱 Procesverbali në Terren</a>
+                <a href="#seksioniAdmin" class="nav-link admin-only" style="display:none;">📥 Kërkesat për Aprovim <span id="nrNjoftimeve" class="badge badge-warning">0</span></a>
+                <a href="#seksioniAnalitika" class="nav-link admin-only" style="display:none;">📈 Analitika sipas Drejtorive</a>
+                <a href="#seksioniZyrtaret" class="nav-link admin-only" style="display:none;">👤 Lista e Zyrtarëve & Gjendja</a>
+                <a href="#seksioniKomisionit" class="nav-link admin-only" style="display:none;">👥 Menaxho Komisionin</a>
+                <a href="#seksioniRegjistrit" class="nav-link admin-only" style="display:none;">📊 Regjistri i Aprovuar (Excel)</a>
+            </nav>
+        </aside>
+
+        <!-- PËRMBAJTJA KRYESORE -->
+        <main class="main-content">
+
+            <!-- 1. PORTALI I TERRENIT -->
+            <section id="seksioniTerrenit" class="card">
+                <div class="card-header">
+                    <h2>📋 Procesverbali i Inventarizimit në Zyra / Terren</h2>
+                    <p class="text-muted">Plotësoni të dhënat e lokacionit, zyrtarit dhe artikujve të inventarit.</p>
+                </div>
+
+                <!-- LOKACIONI DHE INFORMATA E REGJISTRUESIT -->
+                <h3 class="subsection-title">1. Informata e Lokacionit & Komisionit</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Anëtari i Komisionit (Regjistruesi):</label>
+                        <select id="regjistruesiSelect">
+                            <option value="">-- Zgjidh Emrin Tënd --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Data e Procesverbalit:</label>
+                        <input type="date" id="dataProcesverbalit">
+                    </div>
+                    <div class="form-group">
+                        <label>Komuna:</label>
+                        <input type="text" id="komunaInput" value="Komuna e Rahovecit" placeholder="P.sh. Komuna e Rahovecit">
+                    </div>
+                    <div class="form-group">
+                        <label>Objekti Komunal:</label>
+                        <input type="text" id="objektiInput" placeholder="P.sh. Objekti i Vjetër / Objekti i Ri">
+                    </div>
+                    <div class="form-group">
+                        <label>Lokacioni i Detajuar (Kati / Zyra):</label>
+                        <input type="text" id="lokacioniInput" placeholder="P.sh. Kati II, Zyra Nr. 14">
+                    </div>
+                </div>
+
+                <!-- TË DHËNAT E ZYRTARIT DHE DREJTORISË -->
+                <h3 class="subsection-title" style="margin-top: 20px;">2. Informata e Zyrtarit dhe Drejtorisë</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Emri & Mbiemri i Zyrtarit:</label>
+                        <input type="text" id="zyrtariEmri" placeholder="P.sh. Fatmir Gashi">
+                    </div>
+                    <div class="form-group">
+                        <label>Zgjidh Drejtorinë / Sektorin:</label>
+                        <select id="drejtoriaSelect" onchange="trajtoNdryshiminEDrejtorise()">
+                            <option value="">-- Zgjidh nga Lista --</option>
+                            <option value="Zyra e Kryetarit">Zyra e Kryetarit</option>
+                            <option value="Zyra e Nënkryetarit">Zyra e Nënkryetarit</option>
+                            <option value="Kuvendi i Komunës">Kuvendi i Komunës</option>
+                            <option value="Drejtoria për Administratë">Drejtoria për Administratë</option>
+                            <option value="Drejtoria për Shërbime Sociale dhe Përkujdesje Sociale">Drejtoria për Shërbime Sociale dhe Përkujdesje Sociale</option>
+                            <option value="Drejtoria Komunale e Arsimit">Drejtoria Komunale e Arsimit</option>
+                            <option value="Drejtoria për Buxhet dhe Financa">Drejtoria për Buxhet dhe Financa</option>
+                            <option value="Drejtoria për Zhvillim Ekonomik dhe Turizëm">Drejtoria për Zhvillim Ekonomik dhe Turizëm</option>
+                            <option value="Drejtoria për Urbanizëm, Planifikim dhe Mbrojtje të Mjedisit">Drejtoria për Urbanizëm, Planifikim dhe Mbrojtje të Mjedisit</option>
+                            <option value="Drejtoria për Gjeodezi, Kadastër dhe Pronë">Drejtoria për Gjeodezi, Kadastër dhe Pronë</option>
+                            <option value="Drejtoria për Shërbime Publike">Drejtoria për Shërbime Publike</option>
+                            <option value="Drejtoria për Bujqësi dhe Zhvillim Rural">Drejtoria për Bujqësi dhe Zhvillim Rural</option>
+                            <option value="Drejtoria për Inspektim">Drejtoria për Inspektim</option>
+                            <option value="Drejtoria për Rini, Sport dhe Inovacion">Drejtoria për Rini, Sport dhe Inovacion</option>
+                            <option value="Drejtoria për Kulturë dhe Trashëgimi Historike">Drejtoria për Kulturë dhe Trashëgimi Historike</option>
+                            <option value="Drejtoria për Investime dhe Mërgatë">Drejtoria për Investime dhe Mërgatë</option>
+                            <option value="Drejtoria për Mbrojtje dhe Shpëtim">Drejtoria për Mbrojtje dhe Shpëtim</option>
+                            <option value="Tjetër">Tjetër (Shkruaj manualisht)</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="grupiDrejtoriaManual" style="display:none;">
+                        <label>Shkruaj Drejtorinë / Sektorin:</label>
+                        <input type="text" id="drejtoriaManual" placeholder="Shtro drejtorinë tuaj">
+                    </div>
+                    <div class="form-group">
+                        <label>Sektori / Pozita e Zyrtarit:</label>
+                        <input type="text" id="sektoriZyrtarit" placeholder="P.sh. Sektori i Kontabilitetit">
+                    </div>
+                    <div class="form-group">
+                        <label>Gjinia e Zyrtarit:</label>
+                        <select id="gjiniaZyrtarit">
+                            <option value="Mashkull">Mashkull</option>
+                            <option value="Femër">Femër</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- SHTIMI I ARTIKUJVE ME BARKOD, LLOJ DHE GJENDJE -->
+                <h3 class="subsection-title" style="margin-top: 20px;">3. Regjistrimi i Artikujve / Pajisjeve</h3>
+                <div class="form-grid" style="align-items: flex-end;">
+                    <div class="form-group">
+                        <label>Artikulli / Pajisja:</label>
+                        <input type="text" id="emriAsetit" placeholder="P.sh. Laptop, Tavolinë, Karrikë">
+                    </div>
+                    <div class="form-group">
+                        <label>Lloji / Modeli:</label>
+                        <input type="text" id="llojiAsetit" placeholder="P.sh. Dell Latitude 5520">
+                    </div>
+                    <div class="form-group">
+                        <label>Sasia:</label>
+                        <input type="number" id="sasiaAsetit" value="1" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Barkodi (Opsional):</label>
+                        <input type="text" id="barkodAsetit" placeholder="P.sh. 39012830129">
+                    </div>
+                    <div class="form-group">
+                        <label>Gjendja e Asetit (Opsionale):</label>
+                        <select id="gjendjaAsetit">
+                            <option value="Gjendje e mirë">Gjendje e mirë</option>
+                            <option value="Gjendje e mesme">Gjendje e mesme</option>
+                            <option value="Gjendje jo e mirë / E dëmtuar">Gjendje jo e mirë / E dëmtuar</option>
+                            <option value="Jashtë përdorimit / Për depo">Jashtë përdorimit / Për depo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Koment shtesë (Opsional):</label>
+                        <input type="text" id="komentAsetit" placeholder="P.sh. Përdoret rregullisht">
+                    </div>
+                </div>
+                <button type="button" class="btn btn-primary" style="margin-top:10px;" onclick="shtoAsetinNeListe()">➕ Shto Artikullin në Listë</button>
+
+                <!-- LISTA E ARTIKUJVE TË SHTUAR NË KËTË PROCESVERBAL -->
+                <div style="margin-top: 15px;">
+                    <h4>Lista e Artikujve për këtë Zyrtar:</h4>
+                    <ul id="listaAseteveSot" style="list-style: none; margin-top: 10px;"></ul>
+                </div>
+
+                <button class="btn btn-success" style="margin-top: 25px; width: 100%; font-size: 16px;" onclick="dergoProcesverbalin()">📥 Dërgo Procesverbalin për Aprovim</button>
+            </section>
+
+            <!-- 2. PANELI I ADMINIT - APROVIMET -->
+            <section id="seksioniAdmin" class="card admin-only" style="display: none;">
+                <div class="card-header">
+                    <h2>📥 Procesverbalet e Reja për Aprovim</h2>
+                </div>
+                <div class="table-responsive">
+                    <table class="styled-table">
+                        <thead>
+                            <tr>
+                                <th>Regjistruesi / Data</th>
+                                <th>Komuna & Objekti (Lokacioni)</th>
+                                <th>Zyrtari & Drejtoria</th>
+                                <th>Artikujt e Regjistruar</th>
+                                <th>Veprimi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaKerkesave"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 3. SEKSIONI ANALITIK SIPAS DREJTORIVE -->
+            <section id="seksioniAnalitika" class="card admin-only" style="display: none;">
+                <div class="card-header header-flex">
+                    <h2>📈 Analitika & Raporti sipas Drejtorive</h2>
+                    <button class="btn btn-excel" onclick="printoRaportinAnalitikDrejtoria()">🖨️ Printo Raportin Analitik (A4)</button>
+                </div>
+
+                <div class="form-grid" style="margin-bottom: 20px;">
+                    <div class="form-group">
+                        <label>Filtro sipas Drejtorisë:</label>
+                        <select id="filtriDrejtoria" onchange="gjeneroAnalitiken()">
+                            <option value="TE_GJITHA">-- Të gjitha Drejtoritë --</option>
+                            <option value="Zyra e Kryetarit">Zyra e Kryetarit</option>
+                            <option value="Zyra e Nënkryetarit">Zyra e Nënkryetarit</option>
+                            <option value="Kuvendi i Komunës">Kuvendi i Komunës</option>
+                            <option value="Drejtoria për Administratë">Drejtoria për Administratë</option>
+                            <option value="Drejtoria për Shërbime Sociale dhe Përkujdesje Sociale">Drejtoria për Shërbime Sociale dhe Përkujdesje Sociale</option>
+                            <option value="Drejtoria Komunale e Arsimit">Drejtoria Komunale e Arsimit</option>
+                            <option value="Drejtoria për Buxhet dhe Financa">Drejtoria për Buxhet dhe Financa</option>
+                            <option value="Drejtoria për Zhvillim Ekonomik dhe Turizëm">Drejtoria për Zhvillim Ekonomik dhe Turizëm</option>
+                            <option value="Drejtoria për Urbanizëm, Planifikim dhe Mbrojtje të Mjedisit">Drejtoria për Urbanizëm, Planifikim dhe Mbrojtje të Mjedisit</option>
+                            <option value="Drejtoria për Gjeodezi, Kadastër dhe Pronë">Drejtoria për Gjeodezi, Kadastër dhe Pronë</option>
+                            <option value="Drejtoria për Shërbime Publike">Drejtoria për Shërbime Publike</option>
+                            <option value="Drejtoria për Bujqësi dhe Zhvillim Rural">Drejtoria për Bujqësi dhe Zhvillim Rural</option>
+                            <option value="Drejtoria për Inspektim">Drejtoria për Inspektim</option>
+                            <option value="Drejtoria për Rini, Sport dhe Inovacion">Drejtoria për Rini, Sport dhe Inovacion</option>
+                            <option value="Drejtoria për Kulturë dhe Trashëgimi Historike">Drejtoria për Kulturë dhe Trashëgimi Historike</option>
+                            <option value="Drejtoria për Investime dhe Mërgatë">Drejtoria për Investime dhe Mërgatë</option>
+                            <option value="Drejtoria për Mbrojtje dhe Shpëtim">Drejtoria për Mbrojtje dhe Shpëtim</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- STATISTIKAT REZYME -->
+                <div class="stats-grid" style="display: flex; gap: 15px; margin-bottom: 20px;">
+                    <div style="flex:1; background:#eff6ff; padding:15px; border-radius:8px; border:1px solid #bfdbfe;">
+                        <small style="color:#1e40af; font-weight:bold;">TOTAL ZYRTARË</small>
+                        <h2 id="statZyrtaret" style="color:#1e3a8a; margin-top:5px;">0</h2>
+                    </div>
+                    <div style="flex:1; background:#f0fdf4; padding:15px; border-radius:8px; border:1px solid #bbf7d0;">
+                        <small style="color:#166534; font-weight:bold;">TOTAL ARTIKUJ</small>
+                        <h2 id="statArtikujt" style="color:#14532d; margin-top:5px;">0</h2>
+                    </div>
+                    <div style="flex:1; background:#fefce8; padding:15px; border-radius:8px; border:1px solid #fef08a;">
+                        <small style="color:#854d0e; font-weight:bold;">GJENDJE E MIRË</small>
+                        <h2 id="statMire" style="color:#713f12; margin-top:5px;">0</h2>
+                    </div>
+                    <div style="flex:1; background:#fef2f2; padding:15px; border-radius:8px; border:1px solid #fecaca;">
+                        <small style="color:#991b1b; font-weight:bold;">JO E MIRË / DËMTUAR</small>
+                        <h2 id="statJoMire" style="color:#7f1d1d; margin-top:5px;">0</h2>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="styled-table">
+                        <thead>
+                            <tr>
+                                <th>Drejtoria</th>
+                                <th>Zyrtari</th>
+                                <th>Lokacioni</th>
+                                <th>Gjithsej Artikuj</th>
+                                <th>Detajet e Gjendjes së Aseteve</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaAnalitikes"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 4. LISTA E ZYRTARËVE DHE GJENDJA E ASETEVE (A4 PDF PRINT) -->
+            <section id="seksioniZyrtaret" class="card admin-only" style="display: none;">
+                <div class="card-header">
+                    <h2>👤 Lista e Zyrtarëve të Regjistruar dhe Gjendja e Aseteve</h2>
+                    <p class="text-muted">Klikoni mbi butonin për të hapur dhe printuar Raportin A4 për çdo zyrtar.</p>
+                </div>
+                <div class="table-responsive">
+                    <table class="styled-table">
+                        <thead>
+                            <tr>
+                                <th>Zyrtari Komunal</th>
+                                <th>Drejtoria & Sektori</th>
+                                <th>Lokacioni / Zyra</th>
+                                <th>Numri i Aseteve</th>
+                                <th>Gjenero Raportin A4 (Print / PDF)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaZyrtareve"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 5. MENAXHIMI I KOMISIONIT -->
+            <section id="seksioniKomisionit" class="card admin-only" style="display: none;">
+                <div class="card-header">
+                    <h2>👥 Menaxho Komisionin e Regjistrimit të Inventarit</h2>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Emri & Mbiemri i Anëtarit të Komisionit:</label>
+                        <input type="text" id="emriAnetarit" placeholder="P.sh. Asllan Mazreku">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="shtoAnetarinKomisionit()">➕ Shto Anëtarin në Komision</button>
+
+                <div style="margin-top: 20px;">
+                    <h3>Lista e Komisionit Zyrtar</h3>
+                    <ul id="listaKomisionitUl" style="list-style: none; margin-top: 10px;"></ul>
+                </div>
+            </section>
+
+            <!-- 6. REGJISTRI ZYRTAR DHE EXCEL PROFESIONAL -->
+            <section id="seksioniRegjistrit" class="card admin-only" style="display: none;">
+                <div class="card-header header-flex">
+                    <h2>📊 Regjistri Zyrtar i Aprovuar i Inventarit (2026)</h2>
+                    <button class="btn btn-excel" onclick="shkarkoExcelProfesional()">📊 Shkarko Excel Profesional (.xlsx)</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="styled-table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Lokacioni (Komuna / Objekti / Zyra)</th>
+                                <th>Zyrtari (Gjinia / Drejtoria)</th>
+                                <th>Artikujt (Barkodi, Lloji, Sasia, Gjendja)</th>
+                                <th>Regjistruesi</th>
+                                <th>Veprime (🖨️ / 🗑️)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaRegjistritAprovuar"></tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script src="skripta.js"></script>
+</body>
+</html>
